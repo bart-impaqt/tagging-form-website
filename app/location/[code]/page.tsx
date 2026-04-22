@@ -193,6 +193,24 @@ export default function LocationDetailPage({ params }: Props) {
           </p>
         </div>
 
+        <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-neutral-900 mb-2">Wat verwachten we van je</h2>
+          <p className="text-sm text-neutral-600 leading-relaxed">
+            Selecteer per scherm de tags die bij de plek van dat scherm passen. Met een tag geef je aan welke content
+            daar in de toekomst standaard moet draaien. Staat een scherm bijvoorbeeld bij de broodjes, kies dan tags
+            zoals broodjes en dealtjes brood.
+          </p>
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-[#f5c6c5] bg-[#fff6f6] p-5">
+          <h2 className="text-sm font-semibold text-[#b6221c] mb-2">Waarom dit belangrijk is</h2>
+          <p className="text-sm text-[#7f2b28] leading-relaxed">
+            Met deze eerste tagdata per scherm verbeteren we het narrowcastingplatform. Winkelteams krijgen straks een
+            duidelijker overzicht van schermen en kunnen eenvoudiger content-items maken, aan playlists koppelen en via
+            tags de juiste players vinden. Je kunt tags later altijd aanpassen als de situatie verandert.
+          </p>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-700 text-sm mb-6">
             {error}
@@ -223,6 +241,14 @@ export default function LocationDetailPage({ params }: Props) {
                     </h3>
                     <p className="text-xs text-neutral-400 mt-0.5 font-mono">{player.name}</p>
 
+                    <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                      <div className="text-xs font-semibold text-blue-900">Preview playlist</div>
+                      <p className="mt-1 text-xs text-blue-800 leading-relaxed">
+                        Gebruik deze preview om dit scherm in de winkel te herkennen. We hebben vooral technische
+                        playernamen, daarom helpt de preview je te controleren dat je het juiste scherm selecteert.
+                      </p>
+                    </div>
+
                     {Array.isArray(player.playlistPreviews) && player.playlistPreviews.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {player.playlistPreviews.map((preview) => (
@@ -248,6 +274,13 @@ export default function LocationDetailPage({ params }: Props) {
                         ))}
                       </div>
                     )}
+
+                    {(!Array.isArray(player.playlistPreviews) || player.playlistPreviews.length === 0) && (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        Geen preview playlist beschikbaar voor dit scherm. Controleer extra goed of je de juiste player
+                        te pakken hebt.
+                      </div>
+                    )}
                   </div>
 
                   {playerSelections.size > 0 && (
@@ -258,6 +291,11 @@ export default function LocationDetailPage({ params }: Props) {
                 </div>
 
                 {/* Tags */}
+                <div className="mb-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+                  Kies alle tags die op dit scherm van toepassing zijn. Klaar met alle schermen? Klik onderaan op
+                  Opslaan en verzenden.
+                </div>
+
                 <div className="flex flex-wrap gap-2">
                   {PREDEFINED_TAGS.map((tag) => {
                     const selected = playerSelections.has(tag.id);
@@ -287,7 +325,7 @@ export default function LocationDetailPage({ params }: Props) {
                     htmlFor={`remark-${player.id}`}
                     className="block text-xs font-medium text-neutral-500 mb-1"
                   >
-                    Opmerking
+                    Opmerking (optioneel)
                   </label>
                   <textarea
                     id={`remark-${player.id}`}
@@ -299,6 +337,9 @@ export default function LocationDetailPage({ params }: Props) {
                     placeholder="Voeg een specifieke opmerking toe voor dit scherm..."
                     className="w-full resize-y min-h-[56px] px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E92A23] focus:border-transparent"
                   />
+                  <p className="mt-1 text-xs text-neutral-400">
+                    Alleen invullen als je extra toelichting wilt geven.
+                  </p>
                 </div>
               </div>
             );

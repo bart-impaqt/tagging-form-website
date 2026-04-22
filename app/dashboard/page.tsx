@@ -68,6 +68,24 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        <div className="mb-8 rounded-2xl border border-neutral-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-neutral-900 mb-2">Wat je hier doet</h2>
+          <p className="text-sm text-neutral-600 leading-relaxed">
+            In dit overzicht zie je alle HEMA-filialen. Kies jouw locatie via de titel, ondertitel of locatiecode en
+            open daarna de schermen van die locatie. Per scherm selecteer je tags die aangeven welke content daar
+            standaard moet draaien. Dit is een eerste inventarisatie voor alle locaties.
+          </p>
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-[#f5c6c5] bg-[#fff6f6] p-5">
+          <h2 className="text-sm font-semibold text-[#b6221c] mb-2">Waarom dit belangrijk is</h2>
+          <p className="text-sm text-[#7f2b28] leading-relaxed">
+            Met deze eerste tagdata per scherm verbeteren we het narrowcastingplatform. Winkelteams krijgen een
+            duidelijker overzicht van schermen en kunnen later eenvoudiger content-items maken, aan playlists koppelen
+            en via tags de juiste players vinden.
+          </p>
+        </div>
+
         {/* Search bar */}
         <div className="relative mb-8 max-w-sm">
           <svg
