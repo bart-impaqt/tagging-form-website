@@ -3,7 +3,14 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Location, PlayerTagSelection } from "@/types";
-import { PREDEFINED_TAGS, TAG_COLOR_MAP, TAG_SELECTED_COLOR_MAP } from "@/lib/tags";
+import {
+  TAG_COLOR_MAP,
+  TAG_GROUP_LABELS,
+  TAG_SELECTED_COLOR_MAP,
+  TagGroupId,
+  getVisibleTagsForGroup,
+  inferTagGroupFromPlayerName,
+} from "@/lib/tags";
 import Header from "@/components/Header";
 
 interface Props {
@@ -24,6 +31,8 @@ export default function LocationDetailPage({ params }: Props) {
   const [selections, setSelections] = useState<Record<number, Set<string>>>({});
   // remarks: playerId -> free text
   const [remarks, setRemarks] = useState<Record<number, string>>({});
+  // group selection: playerId -> restaurant/takeaway
+  const [tagGroups, setTagGroups] = useState<Record<number, TagGroupId>>({});
 
   useEffect(() => {
     async function load() {
@@ -46,10 +55,15 @@ export default function LocationDetailPage({ params }: Props) {
         // Init empty selections
         const init: Record<number, Set<string>> = {};
         const initRemarks: Record<number, string> = {};
+        const initGroups: Record<number, TagGroupId> = {};
         found.players.forEach((p: { id: number }) => { init[p.id] = new Set(); });
         found.players.forEach((p: { id: number }) => { initRemarks[p.id] = ""; });
+        found.players.forEach((p: { id: number; name: string }) => {
+          initGroups[p.id] = inferTagGroupFromPlayerName(p.name);
+        });
         setSelections(init);
         setRemarks(initRemarks);
+        setTagGroups(initGroups);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Locatie laden mislukt");
       } finally {
@@ -67,6 +81,17 @@ export default function LocationDetailPage({ params }: Props) {
       else set.add(tagId);
       next[playerId] = set;
       return next;
+    });
+  }
+
+  function setPlayerTagGroup(playerId: number, nextGroup: TagGroupId) {
+    setTagGroups((prev) => ({ ...prev, [playerId]: nextGroup }));
+
+    setSelections((prev) => {
+      const allowed = new Set(getVisibleTagsForGroup(nextGroup).map((tag) => tag.id));
+      const current = prev[playerId] || new Set<string>();
+      const filtered = new Set(Array.from(current).filter((tagId) => allowed.has(tagId)));
+      return { ...prev, [playerId]: filtered };
     });
   }
 
@@ -221,6 +246,8 @@ export default function LocationDetailPage({ params }: Props) {
         <div className="space-y-4">
           {location?.players.map((player) => {
             const playerSelections = selections[player.id] || new Set();
+            const playerTagGroup = tagGroups[player.id] ?? inferTagGroupFromPlayerName(player.name);
+            const visibleTags = getVisibleTagsForGroup(playerTagGroup);
             const parts = player.name.split("_");
             // Last meaningful part is the screen label
             const screenLabel = parts.slice(4).join(" ").replace(/-/g, " ") || parts[parts.length - 1].replace(/-/g, " ");
@@ -296,8 +323,29 @@ export default function LocationDetailPage({ params }: Props) {
                   Opslaan en verzenden.
                 </div>
 
+                <div className="mb-3 flex items-center gap-2">
+                  <label
+                    htmlFor={`tag-group-${player.id}`}
+                    className="text-xs font-medium text-neutral-600"
+                  >
+                    Taggroep
+                  </label>
+                  <select
+                    id={`tag-group-${player.id}`}
+                    value={playerTagGroup}
+                    onChange={(e) => setPlayerTagGroup(player.id, e.target.value as TagGroupId)}
+                    className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#E92A23] focus:border-transparent"
+                  >
+                    {Object.entries(TAG_GROUP_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex flex-wrap gap-2">
-                  {PREDEFINED_TAGS.map((tag) => {
+                  {visibleTags.map((tag) => {
                     const selected = playerSelections.has(tag.id);
                     return (
                       <button

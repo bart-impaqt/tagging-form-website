@@ -1,23 +1,50 @@
 import { Tag } from "@/types";
 
-export const PREDEFINED_TAGS: Tag[] = [
-  { id: "broodjes", label: "Broodjes", color: "blue" },
-  { id: "hotdog", label: "Hotdog", color: "orange" },
-  { id: "ijskoffie", label: "IJskoffie", color: "cyan" },
-  { id: "ijs", label: "IJs", color: "teal" },
-  { id: "slush", label: "Slush", color: "purple" },
-  { id: "warme_dranken", label: "Warme dranken", color: "red" },
-  { id: "dealtjes_brood", label: "Dealtjes brood", color: "green" },
-  { id: "dealtjes_gebak", label: "Dealtjes gebak", color: "pink" },
-  { id: "dealtjes_warme_snack", label: "Dealtjes warme snack", color: "yellow" },
-  { id: "ciabatta", label: "Ciabatta", color: "lime" },
-  { id: "rookworst", label: "Rookworst", color: "indigo" },
-  { id: "vier_uurtje", label: "4 uurtje", color: "gray" },
-  { id: "twaalf_uurtje", label: "12 uurtje", color: "blue" },
-  { id: "ontbijt", label: "Ontbijt", color: "orange" },
-  { id: "mini_menu", label: "Mini menu", color: "green" },
-  { id: "cafe_sfeerbeelden", label: "Cafe sfeerbeelden", color: "teal" },
+export type TagGroupId = "restaurant" | "takeaway";
+
+export interface GroupedTag extends Tag {
+  applicableTo: TagGroupId[];
+}
+
+export const TAG_GROUP_LABELS: Record<TagGroupId, string> = {
+  restaurant: "Restaurant",
+  takeaway: "Take away",
+};
+
+export const PREDEFINED_TAGS: GroupedTag[] = [
+  { id: "broodjes", label: "Broodjes", color: "blue", applicableTo: ["restaurant", "takeaway"] },
+  { id: "hotdog", label: "Hotdog", color: "orange", applicableTo: ["restaurant", "takeaway"] },
+  { id: "ijskoffie", label: "IJskoffie", color: "cyan", applicableTo: ["restaurant", "takeaway"] },
+  { id: "ijs", label: "IJs", color: "teal", applicableTo: ["restaurant", "takeaway"] },
+  { id: "slush", label: "Slush", color: "purple", applicableTo: ["restaurant", "takeaway"] },
+  { id: "warme_dranken", label: "Warme dranken", color: "red", applicableTo: ["restaurant", "takeaway"] },
+  { id: "dealtjes_brood", label: "Dealtjes brood", color: "green", applicableTo: ["restaurant"] },
+  { id: "dealtjes_gebak", label: "Dealtjes gebak", color: "pink", applicableTo: ["restaurant"] },
+  { id: "dealtjes_warme_snack", label: "Dealtjes warme snack", color: "yellow", applicableTo: ["restaurant"] },
+  { id: "ciabatta", label: "Ciabatta", color: "lime", applicableTo: ["restaurant", "takeaway"] },
+  { id: "rookworst", label: "Rookworst", color: "indigo", applicableTo: ["restaurant", "takeaway"] },
+  { id: "vier_uurtje", label: "4 uurtje", color: "gray", applicableTo: ["restaurant", "takeaway"] },
+  { id: "twaalf_uurtje", label: "12 uurtje", color: "blue", applicableTo: ["restaurant"] },
+  { id: "ontbijt", label: "Ontbijt", color: "orange", applicableTo: ["restaurant"] },
+  { id: "mini_menu", label: "Mini menu", color: "green", applicableTo: ["restaurant"] },
+  { id: "cafe_sfeerbeelden", label: "Cafe sfeerbeelden", color: "teal", applicableTo: ["restaurant"] },
+  { id: "warme_lunch", label: "Warme lunch", color: "red", applicableTo: ["restaurant"] },
+  { id: "tosti_croque", label: "Tosti/croque", color: "yellow", applicableTo: ["restaurant", "takeaway"] },
 ];
+
+export function inferTagGroupFromPlayerName(playerName: string): TagGroupId {
+  if (/(^|[\s_-])ta($|[\s_-])/i.test(playerName) || /take[\s_-]*away/i.test(playerName)) {
+    return "takeaway";
+  }
+
+  return "restaurant";
+}
+
+export function getVisibleTagsForGroup(group: TagGroupId): GroupedTag[] {
+  return PREDEFINED_TAGS
+    .filter((tag) => tag.applicableTo.includes(group))
+    .sort((a, b) => a.label.localeCompare(b.label, "nl", { sensitivity: "base" }));
+}
 
 export const TAG_COLOR_MAP: Record<string, string> = {
   blue: "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200",
