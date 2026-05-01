@@ -5,7 +5,7 @@ import {
   fetchAllPlayers,
   fetchAllPlayersWithDisplays,
 } from "@/lib/scala";
-import { loadAllowedFilialPlayersFromXlsx } from "@/lib/scala-player-allowlist";
+import { loadAllowedFilialPlayersFromCsv } from "@/lib/scala-player-allowlist";
 import { getLocationByCode, groupPlayersIntoLocations } from "@/lib/locations";
 import { applyRateLimit, getClientIp, withRateLimitHeaders } from "@/lib/rate-limit";
 
@@ -13,7 +13,7 @@ let allowlistCache: Promise<Map<string, Set<string>>> | null = null;
 
 function getAllowlist(): Promise<Map<string, Set<string>>> {
   if (!allowlistCache) {
-    allowlistCache = loadAllowedFilialPlayersFromXlsx();
+    allowlistCache = loadAllowedFilialPlayersFromCsv();
   }
   return allowlistCache;
 }
