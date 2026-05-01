@@ -185,7 +185,15 @@ export async function loadAllowedFilialPlayersFromXlsx(): Promise<AllowedMap> {
   if (rows.length === 0) return new Map();
 
   const headers = rows[0] ?? [];
-  const filialIdx = pickColumnIndex(headers, ["filial", "filiaal", "locationcode", "location", "code"]);
+  const filialIdx = pickColumnIndex(headers, [
+    "filial",
+    "filialcode",
+    "filiaal",
+    "filiaalcode",
+    "locationcode",
+    "location",
+    "code",
+  ]);
   const playerIdx = pickColumnIndex(headers, ["player", "playername", "screen", "naam"]);
 
   if (filialIdx < 0 || playerIdx < 0) {
