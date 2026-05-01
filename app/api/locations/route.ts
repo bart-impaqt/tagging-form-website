@@ -5,8 +5,33 @@ import {
   fetchAllPlayers,
   fetchAllPlayersWithDisplays,
 } from "@/lib/scala";
+import { loadAllowedFilialPlayersFromXlsx } from "@/lib/scala-player-allowlist";
 import { getLocationByCode, groupPlayersIntoLocations } from "@/lib/locations";
 import { applyRateLimit, getClientIp, withRateLimitHeaders } from "@/lib/rate-limit";
+
+let allowlistCache: Promise<Map<string, Set<string>>> | null = null;
+
+function getAllowlist(): Promise<Map<string, Set<string>>> {
+  if (!allowlistCache) {
+    allowlistCache = loadAllowedFilialPlayersFromXlsx();
+  }
+  return allowlistCache;
+}
+
+function filterLocationsByAllowlist(
+  locations: Awaited<ReturnType<typeof groupPlayersIntoLocations>>,
+  allowlist: Map<string, Set<string>>
+) {
+  return locations
+    .map((location) => {
+      const allowedPlayers = allowlist.get(location.code.toUpperCase());
+      if (!allowedPlayers) return null;
+      const players = location.players.filter((player) => allowedPlayers.has(player.name.toUpperCase()));
+      if (players.length === 0) return null;
+      return { ...location, players };
+    })
+    .filter((location): location is NonNullable<typeof location> => Boolean(location));
+}
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -37,8 +62,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const players = await fetchAllPlayersWithDisplays();
-      const locations = groupPlayersIntoLocations(players);
+      const [players, allowlist] = await Promise.all([fetchAllPlayersWithDisplays(), getAllowlist()]);
+      const locations = filterLocationsByAllowlist(groupPlayersIntoLocations(players), allowlist);
       const location = getLocationByCode(locations, code.toUpperCase());
 
       if (!location) {
@@ -52,8 +77,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ location });
     }
 
-    const players = await fetchAllPlayers();
-    const locations = groupPlayersIntoLocations(players);
+    const [players, allowlist] = await Promise.all([fetchAllPlayers(), getAllowlist()]);
+    const locations = filterLocationsByAllowlist(groupPlayersIntoLocations(players), allowlist);
     return NextResponse.json({ locations });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
