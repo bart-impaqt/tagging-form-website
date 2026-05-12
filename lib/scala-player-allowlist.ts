@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { parsePlayerName } from "@/lib/locations";
 
 type AllowedMap = Map<string, Set<string>>;
 
@@ -77,8 +78,12 @@ export async function loadAllowedFilialPlayersFromCsv(): Promise<AllowedMap> {
   const allowed: AllowedMap = new Map();
   for (const line of lines.slice(1)) {
     const cols = parseCsvLine(line);
-    const filial = buildFilialCode(cols[filialTypeIdx] ?? "", cols[filialCodeIdx] ?? "");
-    const playerName = normalizePlayerName(cols[playerIdx] ?? "");
+    const rawPlayerName = cols[playerIdx] ?? "";
+    const parsedPlayer = parsePlayerName(rawPlayerName);
+    const filial =
+      parsedPlayer?.code.toUpperCase() ??
+      buildFilialCode(cols[filialTypeIdx] ?? "", cols[filialCodeIdx] ?? "");
+    const playerName = normalizePlayerName(rawPlayerName);
     if (!filial || !playerName) continue;
     if (!allowed.has(filial)) allowed.set(filial, new Set());
     allowed.get(filial)!.add(playerName);
